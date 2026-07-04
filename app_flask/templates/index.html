@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credit Risk Analyser | Shylaja P</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">🏦 CreditIQ</div>
+  <div class="nav-links">
+    <a href="#" onclick="goToStep(1)">Home</a>
+    <span>Built by Shylaja P</span>
+  </div>
+</nav>
+
+<!-- HERO (step 0) -->
+<div id="step-hero" class="page active">
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="hero-badge">🤖 AI-Powered Credit Analysis</div>
+      <h1>Know Your <span class="gradient-text">Credit Risk</span><br>Before the Bank Does</h1>
+      <p>Get your predicted credit score, default risk, and personalised improvement tips in under 2 minutes.</p>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-num">ROC-AUC</div><div class="stat-label">0.685</div></div>
+        <div class="stat"><div class="stat-num">Recall</div><div class="stat-label">0.62</div></div>
+        <div class="stat"><div class="stat-num">Model</div><div class="stat-label">Logistic Regression</div></div>
+        <div class="stat"><div class="stat-num">Explainability</div><div class="stat-label">SHAP</div></div>
+      </div>
+      <button class="btn-primary btn-large" onclick="goToStep(1)">
+        Start My Credit Analysis →
+      </button>
+    </div>
+    <div class="hero-visual">
+      <div class="score-preview">
+        <div class="score-ring">
+          <svg viewBox="0 0 200 200" width="200" height="200">
+            <circle cx="100" cy="100" r="80" fill="none" stroke="#1e3a5f" stroke-width="12"/>
+            <circle cx="100" cy="100" r="80" fill="none" stroke="#f59e0b" stroke-width="12"
+                    stroke-dasharray="400" stroke-dashoffset="100"
+                    stroke-linecap="round" transform="rotate(-90 100 100)"/>
+          </svg>
+          <div class="score-preview-num">742</div>
+          <div class="score-preview-label">Very Good</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 1: Personal Details -->
+<div id="step-1" class="page">
+  <div class="form-container">
+    <div class="progress-bar">
+      <div class="progress-fill" style="width:25%"></div>
+    </div>
+    <div class="step-label">Step 1 of 3 — Personal Details</div>
+
+    <div class="form-card">
+      <div class="form-card-icon">👤</div>
+      <h2>Tell us about yourself</h2>
+      <p class="form-subtitle">Basic information to personalise your analysis</p>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="name" placeholder="e.g. Shylaja P" required>
+        </div>
+        <div class="form-group">
+          <label>Age</label>
+          <input type="number" id="age" placeholder="25" min="18" max="80">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Employment Type</label>
+        <div class="option-cards" id="employment-options">
+          <div class="option-card selected" onclick="selectOption('employment', 'Salaried', this)">
+            <div class="option-icon">💼</div>
+            <div class="option-label">Salaried</div>
+          </div>
+          <div class="option-card" onclick="selectOption('employment', 'Self-employed', this)">
+            <div class="option-icon">🧑‍💻</div>
+            <div class="option-label">Self-employed</div>
+          </div>
+          <div class="option-card" onclick="selectOption('employment', 'Business owner', this)">
+            <div class="option-icon">🏢</div>
+            <div class="option-label">Business Owner</div>
+          </div>
+          <div class="option-card" onclick="selectOption('employment', 'Student', this)">
+            <div class="option-icon">🎓</div>
+            <div class="option-label">Student</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Work Experience: <span id="exp-val">2</span> years</label>
+        <input type="range" id="experience" min="0" max="40" value="2"
+               oninput="document.getElementById('exp-val').textContent=this.value">
+      </div>
+
+      <button class="btn-primary" onclick="nextStep(1)">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2: Financial Details -->
+<div id="step-2" class="page">
+  <div class="form-container">
+    <div class="progress-bar">
+      <div class="progress-fill" style="width:58%"></div>
+    </div>
+    <div class="step-label">Step 2 of 3 — Financial Details</div>
+
+    <div class="form-card">
+      <div class="form-card-icon">💰</div>
+      <h2>Income & Savings</h2>
+      <p class="form-subtitle">Your financial capacity</p>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Monthly Income (₹)</label>
+          <input type="number" id="income" placeholder="50000" min="0"
+                 oninput="updateRatios()">
+        </div>
+        <div class="form-group">
+          <label>Total Savings (₹)</label>
+          <input type="number" id="savings" placeholder="100000" min="0">
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Monthly Savings (₹)</label>
+          <input type="number" id="monthly_savings" placeholder="5000" min="0"
+                 oninput="updateRatios()">
+        </div>
+        <div class="form-group">
+          <label>Total Debt (₹)</label>
+          <input type="number" id="debt" placeholder="200000" min="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Monthly EMI Payments (₹)</label>
+        <input type="number" id="monthly_emi" placeholder="10000" min="0"
+               oninput="updateRatios()">
+      </div>
+
+      <!-- Live ratio indicators -->
+      <div class="ratio-grid" id="ratio-grid">
+        <div class="ratio-card" id="sr-card">
+          <div class="ratio-label">Savings Rate</div>
+          <div class="ratio-value" id="sr-val">—</div>
+          <div class="ratio-hint" id="sr-hint">Enter income & savings</div>
+        </div>
+        <div class="ratio-card" id="dr-card">
+          <div class="ratio-label">EMI/Income</div>
+          <div class="ratio-value" id="dr-val">—</div>
+          <div class="ratio-hint" id="dr-hint">Enter income & EMI</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-icon">🛒</div>
+      <h2>Monthly Spending</h2>
+      <p class="form-subtitle">Approximate spend per category</p>
+
+      <div class="form-grid-4">
+        <div class="form-group">
+          <label>🍔 Food</label>
+          <input type="number" id="food" placeholder="8000" min="0" oninput="updateRatios()">
+        </div>
+        <div class="form-group">
+          <label>👗 Shopping</label>
+          <input type="number" id="shopping" placeholder="5000" min="0" oninput="updateRatios()">
+        </div>
+        <div class="form-group">
+          <label>🎬 Entertainment</label>
+          <input type="number" id="entertainment" placeholder="3000" min="0" oninput="updateRatios()">
+        </div>
+        <div class="form-group">
+          <label>✈️ Travel</label>
+          <input type="number" id="travel" placeholder="4000" min="0" oninput="updateRatios()">
+        </div>
+        <div class="form-group">
+          <label>💡 Bills</label>
+          <input type="number" id="bills" placeholder="5000" min="0" oninput="updateRatios()">
+        </div>
+        <div class="form-group">
+          <label>🏠 Rent</label>
+          <input type="number" id="rent" placeholder="15000" min="0" oninput="updateRatios()">
+        </div>
+        <div class="form-group">
+          <label>📚 Education</label>
+          <input type="number" id="education" placeholder="2000" min="0" oninput="updateRatios()">
+        </div>
+        <div class="form-group">
+          <label>🏥 Medical</label>
+          <input type="number" id="medical" placeholder="1000" min="0" oninput="updateRatios()">
+        </div>
+      </div>
+
+      <div class="ratio-card" id="er-card" style="margin-top:1rem">
+        <div class="ratio-label">Expense Ratio</div>
+        <div class="ratio-value" id="er-val">—</div>
+        <div class="ratio-hint" id="er-hint">Enter income & spending</div>
+      </div>
+
+      <div style="display:flex;gap:1rem;margin-top:1.5rem">
+        <button class="btn-secondary" onclick="goToStep(1)">← Back</button>
+        <button class="btn-primary" onclick="nextStep(2)">Continue →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3: Credit History -->
+<div id="step-3" class="page">
+  <div class="form-container">
+    <div class="progress-bar">
+      <div class="progress-fill" style="width:91%"></div>
+    </div>
+    <div class="step-label">Step 3 of 3 — Credit History & Assets</div>
+
+    <div class="form-card">
+      <div class="form-card-icon">📋</div>
+      <h2>Credit History</h2>
+      <p class="form-subtitle">Past behavior predicts future behavior</p>
+
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label>Active Loans</label>
+          <input type="number" id="active_loans" placeholder="1" min="0" max="20">
+        </div>
+        <div class="form-group">
+          <label>Credit Cards</label>
+          <input type="number" id="credit_cards" placeholder="1" min="0" max="20">
+        </div>
+        <div class="form-group">
+          <label>Late EMI Payments</label>
+          <input type="number" id="late_payments" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Credit Card Usage: <span id="cc-val">30</span>%</label>
+        <input type="range" id="cc_usage" min="0" max="100" value="30"
+               oninput="document.getElementById('cc-val').textContent=this.value">
+        <div class="range-labels">
+          <span>0% (None)</span>
+          <span style="color:#10b981">30% (Ideal)</span>
+          <span>100% (Maxed)</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Past Loan Defaults?</label>
+        <div class="option-cards" id="default-options">
+          <div class="option-card selected" onclick="selectOption('past_default','No',this)"
+               style="flex:1">
+            <div class="option-icon">✅</div>
+            <div class="option-label">No Defaults</div>
+          </div>
+          <div class="option-card" onclick="selectOption('past_default','Yes',this)"
+               style="flex:1">
+            <div class="option-icon">❌</div>
+            <div class="option-label">Had a Default</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Loan Repayment History</label>
+        <div class="option-cards" id="repayment-options">
+          <div class="option-card" onclick="selectOption('repayment_history','Poor',this)">
+            <div class="option-icon">😞</div><div class="option-label">Poor</div>
+          </div>
+          <div class="option-card" onclick="selectOption('repayment_history','Average',this)">
+            <div class="option-icon">😐</div><div class="option-label">Average</div>
+          </div>
+          <div class="option-card selected" onclick="selectOption('repayment_history','Good',this)">
+            <div class="option-icon">😊</div><div class="option-label">Good</div>
+          </div>
+          <div class="option-card" onclick="selectOption('repayment_history','Excellent',this)">
+            <div class="option-icon">🌟</div><div class="option-label">Excellent</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-icon">🏠</div>
+      <h2>Assets & Banking</h2>
+      <p class="form-subtitle">Financial strength signals</p>
+
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label>Own House?</label>
+          <div class="option-cards" id="house-options">
+            <div class="option-card selected" onclick="selectOption('own_house','No',this)" style="flex:1">
+              <div class="option-label">🏘️ Renting</div>
+            </div>
+            <div class="option-card" onclick="selectOption('own_house','Yes',this)" style="flex:1">
+              <div class="option-label">🏠 Own House</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Vehicle?</label>
+          <div class="option-cards" id="vehicle-options">
+            <div class="option-card selected" onclick="selectOption('vehicle','No',this)" style="flex:1">
+              <div class="option-label">🚶 None</div>
+            </div>
+            <div class="option-card" onclick="selectOption('vehicle','Yes',this)" style="flex:1">
+              <div class="option-label">🚗 Yes</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Investments (₹)</label>
+          <input type="number" id="investments" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label>Avg Bank Balance (₹)</label>
+          <input type="number" id="avg_balance" placeholder="50000" min="0">
+        </div>
+        <div class="form-group">
+          <label>Monthly Transactions</label>
+          <input type="number" id="monthly_txn" placeholder="20" min="0">
+        </div>
+        <div class="form-group">
+          <label>Cash Withdrawal Frequency</label>
+          <select id="cash_withdrawal">
+            <option value="Rarely">Rarely</option>
+            <option value="Sometimes" selected>Sometimes</option>
+            <option value="Often">Often</option>
+            <option value="Very Often">Very Often</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:1rem;margin-top:1.5rem">
+        <button class="btn-secondary" onclick="goToStep(2)">← Back</button>
+        <button class="btn-primary" onclick="submitForm()">
+          🔍 Analyse My Credit Risk
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 4: Loading -->
+<div id="step-loading" class="page">
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <h2>Analysing your profile...</h2>
+    <p>Running Logistic Regression + SHAP feature analysis</p>
+    <div class="loading-steps">
+      <div class="loading-step active" id="ls1">✅ Processing financial ratios</div>
+      <div class="loading-step" id="ls2">⏳ Running ML model</div>
+      <div class="loading-step" id="ls3">⏳ Generating credit score</div>
+      <div class="loading-step" id="ls4">⏳ Building improvement tips</div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 5: Results -->
+<div id="step-results" class="page">
+  <div class="results-container">
+
+    <div class="results-header">
+      <h2>Credit Analysis for <span id="res-name">—</span></h2>
+      <p>Here's your complete credit risk profile</p>
+    </div>
+
+    <!-- Score + Risk -->
+    <div class="results-grid-top">
+      <div class="score-card-result">
+        <div class="score-label-top">Predicted Credit Score</div>
+        <div class="score-big" id="res-score">—</div>
+        <div class="score-band-pill" id="res-band">—</div>
+        <div class="score-bands-mini">
+          <div class="band-mini" data-range="300-579" data-label="Poor"></div>
+          <div class="band-mini" data-range="580-669" data-label="Fair"></div>
+          <div class="band-mini" data-range="670-739" data-label="Good"></div>
+          <div class="band-mini" data-range="740-799" data-label="Very Good"></div>
+          <div class="band-mini" data-range="800-900" data-label="Excellent"></div>
+        </div>
+        <div class="score-range-label">300 ←————————→ 900</div>
+      </div>
+
+      <div class="risk-card-result" id="res-risk-card">
+        <div class="risk-label-top">Loan Default Risk</div>
+        <div class="risk-big" id="res-proba">—</div>
+        <div class="risk-name" id="res-risk-name">—</div>
+        <div class="risk-bands-ref">
+          <div class="risk-ref approve-ref">✅ &lt;30% → Approve</div>
+          <div class="risk-ref review-ref">⚠️ 30-55% → Review</div>
+          <div class="risk-ref decline-ref">🚫 &gt;55% → Decline</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="metrics-grid" id="res-metrics">
+      <div class="metric-box">
+        <div class="metric-icon">💰</div>
+        <div class="metric-val" id="m-sr">—</div>
+        <div class="metric-name">Savings Rate</div>
+        <div class="metric-status" id="ms-sr">—</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-icon">💳</div>
+        <div class="metric-val" id="m-dr">—</div>
+        <div class="metric-name">EMI/Income</div>
+        <div class="metric-status" id="ms-dr">—</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-icon">🛒</div>
+        <div class="metric-val" id="m-er">—</div>
+        <div class="metric-name">Expense Ratio</div>
+        <div class="metric-status" id="ms-er">—</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-icon">📊</div>
+        <div class="metric-val" id="m-di">—</div>
+        <div class="metric-name">Debt/Income</div>
+        <div class="metric-status" id="ms-di">—</div>
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="tips-section">
+      <h3>🚀 How to Improve Your Score</h3>
+      <p class="tips-subtitle">Personalised recommendations based on your profile</p>
+      <div id="tips-container"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:2rem">
+      <button class="btn-primary" onclick="startOver()">
+        ← Analyse Another Customer
+      </button>
+    </div>
+
+    <div class="results-footer">
+      Built by <strong>Shylaja P</strong> &nbsp;|&nbsp;
+      Logistic Regression + SHAP &nbsp;|&nbsp;
+      <a href="https://github.com/shylaja-padmanaban/credit-risk-project"
+         target="_blank">GitHub</a> &nbsp;|&nbsp;
+      This is a portfolio project, not financial advice.
+    </div>
+  </div>
+</div>
+
+<script>
+// State
+const formData = {
+  employment: 'Salaried',
+  past_default: 'No',
+  repayment_history: 'Good',
+  own_house: 'No',
+  vehicle: 'No'
+};
+
+function selectOption(field, value, el) {
+  formData[field] = value;
+  el.closest('.option-cards').querySelectorAll('.option-card')
+    .forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function goToStep(n) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = n === 0 ? 'step-hero' : `step-${n}`;
+  document.getElementById(target).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function nextStep(current) {
+  if (current === 1) {
+    const name = document.getElementById('name').value.trim();
+    if (!name) { alert('Please enter your name.'); return; }
+    formData.name = name;
+    formData.age  = document.getElementById('age').value || 25;
+    formData.experience = document.getElementById('experience').value;
+  }
+  if (current === 2) {
+    if (!document.getElementById('income').value) {
+      alert('Please enter your monthly income.'); return;
+    }
+    ['income','savings','monthly_savings','debt','monthly_emi',
+     'food','shopping','entertainment','travel','bills','rent','education','medical'
+    ].forEach(k => {
+      formData[k] = document.getElementById(k).value || 0;
+    });
+  }
+  goToStep(current + 1);
+}
+
+function updateRatios() {
+  const income = parseFloat(document.getElementById('income').value) || 0;
+  const ms     = parseFloat(document.getElementById('monthly_savings').value) || 0;
+  const emi    = parseFloat(document.getElementById('monthly_emi').value) || 0;
+  const spendIds = ['food','shopping','entertainment','travel','bills','rent','education','medical'];
+  const totalExp = spendIds.reduce((s,k) => s + (parseFloat(document.getElementById(k)?.value) || 0), 0);
+
+  if (income > 0) {
+    const sr = ms / income * 100;
+    document.getElementById('sr-val').textContent = sr.toFixed(1) + '%';
+    document.getElementById('sr-hint').textContent =
+      sr >= 20 ? '✅ Great savings habit' : sr >= 10 ? '⚠️ Try to save more' : '🔴 Low savings rate';
+    document.getElementById('sr-card').className =
+      'ratio-card ' + (sr >= 20 ? 'good' : sr >= 10 ? 'warn' : 'bad');
+
+    const dr = emi / income * 100;
+    document.getElementById('dr-val').textContent = dr.toFixed(1) + '%';
+    document.getElementById('dr-hint').textContent =
+      dr <= 30 ? '✅ Safe EMI level' : dr <= 50 ? '⚠️ Getting high' : '🔴 Too much EMI burden';
+    document.getElementById('dr-card').className =
+      'ratio-card ' + (dr <= 30 ? 'good' : dr <= 50 ? 'warn' : 'bad');
+
+    const er = totalExp / income * 100;
+    document.getElementById('er-val').textContent = er.toFixed(1) + '%';
+    document.getElementById('er-hint').textContent =
+      er <= 50 ? '✅ Healthy spending' : er <= 75 ? '⚠️ Watch your expenses' : '🔴 Overspending';
+    document.getElementById('er-card').className =
+      'ratio-card ' + (er <= 50 ? 'good' : er <= 75 ? 'warn' : 'bad');
+  }
+}
+
+async function submitForm() {
+  ['active_loans','credit_cards','late_payments','investments',
+   'avg_balance','monthly_txn'].forEach(k => {
+    formData[k] = document.getElementById(k).value || 0;
+  });
+  formData.cc_usage          = document.getElementById('cc_usage').value;
+  formData.cash_withdrawal   = document.getElementById('cash_withdrawal').value;
+
+  // Show loading
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('step-loading').classList.add('active');
+
+  // Animate loading steps
+  const steps = ['ls2','ls3','ls4'];
+  for (let i = 0; i < steps.length; i++) {
+    await new Promise(r => setTimeout(r, 600));
+    document.getElementById(steps[i]).textContent =
+      document.getElementById(steps[i]).textContent.replace('⏳','✅');
+    document.getElementById(steps[i]).classList.add('active');
+  }
+
+  try {
+    const res  = await fetch('/predict', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(formData)
+    });
+    const data = await res.json();
+    showResults(data);
+  } catch(e) {
+    alert('Error connecting to server. Make sure Flask is running.');
+    goToStep(3);
+  }
+}
+
+function showResults(data) {
+  document.getElementById('res-name').textContent   = data.name;
+  document.getElementById('res-score').textContent  = data.score;
+  document.getElementById('res-score').style.color  = data.band_color;
+  document.getElementById('res-band').textContent   = data.band_name;
+  document.getElementById('res-band').style.background = data.band_color + '22';
+  document.getElementById('res-band').style.color      = data.band_color;
+  document.getElementById('res-proba').textContent  = data.default_proba + '%';
+  document.getElementById('res-proba').style.color  = data.risk_color;
+  document.getElementById('res-risk-name').textContent = data.risk_name;
+  document.getElementById('res-risk-card').className   = `risk-card-result ${data.risk_class}`;
+
+  const m = data.metrics;
+  document.getElementById('m-sr').textContent  = m.savings_rate + '%';
+  document.getElementById('ms-sr').textContent = m.savings_rate >= 20 ? '✅ Good' : '⚠️ Improve';
+  document.getElementById('m-dr').textContent  = m.emi_ratio + '%';
+  document.getElementById('ms-dr').textContent = m.emi_ratio <= 30 ? '✅ Safe' : '⚠️ High';
+  document.getElementById('m-er').textContent  = m.expense_ratio + '%';
+  document.getElementById('ms-er').textContent = m.expense_ratio <= 70 ? '✅ Healthy' : '⚠️ Watch';
+  document.getElementById('m-di').textContent  = m.debt_income + 'x';
+  document.getElementById('ms-di').textContent = m.debt_income <= 5 ? '✅ OK' : '⚠️ High';
+
+  const tc = document.getElementById('tips-container');
+  tc.innerHTML = data.tips.map(t => `
+    <div class="tip-card">
+      <div class="tip-icon">${t.icon}</div>
+      <div class="tip-content">
+        <div class="tip-title">${t.title}</div>
+        <div class="tip-body">${t.body}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('step-results').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startOver() {
+  formData.employment = 'Salaried';
+  formData.past_default = 'No';
+  formData.repayment_history = 'Good';
+  formData.own_house = 'No';
+  formData.vehicle = 'No';
+  document.querySelectorAll('input[type=text], input[type=number]')
+    .forEach(i => i.value = '');
+  // Reset loading steps
+  ['ls2','ls3','ls4'].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = '⏳ ' + el.textContent.replace('✅ ','');
+    el.classList.remove('active');
+  });
+  goToStep(0);
+}
+</script>
+</body>
+</html>
