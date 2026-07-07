@@ -137,20 +137,6 @@ Machine Learning Workflow
 8. Prediction Generation
 9. Result Display
 
-Screenshots
-
-Home Page
-
-(Add screenshot here)
-
-Prediction Page
-
-(Add screenshot here)
-
-Prediction Result
-
-(Add screenshot here)
-
 Future Improvements
 
 • User Authentication
