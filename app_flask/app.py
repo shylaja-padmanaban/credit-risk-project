@@ -1,11 +1,7 @@
-"""
-Flask backend for Credit Risk Analyser
-Run: python app_flask/app.py
-"""
 from flask import Flask, render_template, request, jsonify
 import joblib
 import pandas as pd
-import sys, os
+import os, sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
@@ -20,37 +16,36 @@ def get_default_proba(income_annual, savings, debt):
         pipeline = joblib.load(MODEL_PATH)
         medians  = pd.read_csv(MEDIANS_PATH, index_col=0)["0"]
         expected = pipeline.named_steps['scaler'].feature_names_in_
-        base_row = medians.reindex(expected).to_dict()
-        base_row["INCOME"]           = income_annual
-        base_row["SAVINGS"]          = savings
-        base_row["DEBT"]             = debt
-        base_row["R_SAVINGS_INCOME"] = savings / income_annual if income_annual > 0 else 0
-        base_row["R_DEBT_INCOME"]    = debt / income_annual if income_annual > 0 else 0
-        base_row["R_DEBT_SAVINGS"]   = debt / savings if savings > 0 else 0
-        row_df = pd.DataFrame([base_row]).reindex(columns=expected, fill_value=0)
-        return float(pipeline.predict_proba(row_df)[:, 1][0])
+        row      = medians.reindex(expected).to_dict()
+        row["INCOME"]           = income_annual
+        row["SAVINGS"]          = savings
+        row["DEBT"]             = debt
+        row["R_SAVINGS_INCOME"] = savings / income_annual if income_annual > 0 else 0
+        row["R_DEBT_INCOME"]    = debt / income_annual   if income_annual > 0 else 0
+        row["R_DEBT_SAVINGS"]   = debt / savings         if savings > 0 else 0
+        df = pd.DataFrame([row]).reindex(columns=expected, fill_value=0)
+        return float(pipeline.predict_proba(df)[:, 1][0])
     except Exception as e:
-        print(f"Model error: {e}")
+        print("Model error:", e)
         return 0.35
 
 
-def compute_credit_score(data):
-    income         = float(data.get('income', 0))
-    monthly_savings= float(data.get('monthly_savings', 0))
-    monthly_emi    = float(data.get('monthly_emi', 0))
-    past_default   = data.get('past_default', 'No')
-    repayment      = data.get('repayment_history', 'Good')
-    cc_usage       = float(data.get('cc_usage', 30))
-    active_loans   = int(data.get('active_loans', 1))
-    employment     = data.get('employment', 'Salaried')
-    own_house      = data.get('own_house', 'No')
-    vehicle        = data.get('vehicle', 'No')
-    investments    = float(data.get('investments', 0))
-    cash_withdrawal= data.get('cash_withdrawal', 'Sometimes')
-    late_payments  = int(data.get('late_payments', 0))
-
-    spend_keys = ['food','shopping','entertainment','travel','bills','rent','education','medical']
-    total_exp  = sum(float(data.get(k, 0)) for k in spend_keys)
+def compute_score(d):
+    income  = float(d.get('income', 0))
+    ms      = float(d.get('monthly_savings', 0))
+    emi     = float(d.get('monthly_emi', 0))
+    spend   = sum(float(d.get(k, 0)) for k in
+                  ['food', 'shopping', 'entertainment', 'travel', 'bills', 'rent', 'education', 'medical'])
+    rh      = d.get('repayment_history', 'Good')
+    default = d.get('past_default', 'No')
+    cc      = float(d.get('cc_usage', 30))
+    loans   = int(d.get('active_loans', 1))
+    emp     = d.get('employment', 'Salaried')
+    house   = d.get('own_house', 'No')
+    vehicle = d.get('vehicle', 'No')
+    invest  = float(d.get('investments', 0))
+    late    = int(d.get('late_payments', 0))
+    cw      = d.get('cash_withdrawal', 'Sometimes')
 
     score = 650
 
@@ -59,130 +54,123 @@ def compute_credit_score(data):
     elif income >= 50000:  score += 10
     else:                  score -= 20
 
-    sr = monthly_savings / income if income > 0 else 0
+    sr = ms / income if income > 0 else 0
     if   sr >= 0.30: score += 35
     elif sr >= 0.20: score += 20
     elif sr >= 0.10: score +=  5
     else:            score -= 15
 
-    dr = monthly_emi / income if income > 0 else 0
+    dr = emi / income if income > 0 else 0
     if   dr <= 0.20: score += 40
     elif dr <= 0.30: score += 20
     elif dr <= 0.50: score -= 10
     else:            score -= 40
 
-    er = total_exp / income if income > 0 else 0
+    er = spend / income if income > 0 else 0
     if   er <= 0.50: score += 20
     elif er <= 0.70: score +=  5
     else:            score -= 25
 
-    score += {"Excellent": 60, "Good": 30, "Average": 0, "Poor": -50}[repayment]
+    score += {"Excellent": 60, "Good": 30, "Average": 0, "Poor": -50}[rh]
 
-    if past_default == "Yes":
-        score -= 80
-    score -= min(late_payments * 10, 50)
+    if default == "Yes": score -= 80
+    score -= min(late * 10, 50)
 
-    if   cc_usage <= 30: score += 20
-    elif cc_usage <= 60: score +=  5
-    else:                score -= 25
+    if   cc <= 30: score += 20
+    elif cc <= 60: score +=  5
+    else:          score -= 25
 
-    if   active_loans == 0: score += 10
-    elif active_loans <= 2: score +=  5
-    elif active_loans > 5:  score -= 20
+    if   loans == 0: score += 10
+    elif loans <= 2: score +=  5
+    elif loans >  5: score -= 20
 
-    if own_house  == "Yes": score += 25
-    if vehicle    == "Yes": score += 10
-    if investments >= 500000: score += 20
-    elif investments >= 100000: score += 10
+    if house   == "Yes": score += 25
+    if vehicle == "Yes": score += 10
+    if invest >= 500000: score += 20
+    elif invest >= 100000: score += 10
 
-    score += {"Rarely": 10, "Sometimes": 0, "Often": -10, "Very Often": -20}[cash_withdrawal]
-    score += {"Salaried": 20, "Business owner": 15, "Self-employed": 5, "Student": -10}[employment]
+    score += {"Rarely": 10, "Sometimes": 0, "Often": -10, "Very Often": -20}[cw]
+    score += {"Salaried": 20, "Business owner": 15, "Self-employed": 5, "Student": -10}[emp]
 
     return max(300, min(900, int(score)))
 
 
-def get_score_band(score):
+def score_band(score):
     if score >= 800: return "Excellent",  "#10b981"
-    if score >= 740: return "Very Good",  "#22c55e"
-    if score >= 670: return "Good",       "#eab308"
+    if score >= 740: return "Very Good",  "#3b82f6"
+    if score >= 670: return "Good",       "#f59e0b"
     if score >= 580: return "Fair",       "#f97316"
     return                   "Poor",      "#ef4444"
 
 
-def get_risk_band(proba):
-    if proba < 0.30: return "Low Risk",    "approve", "#10b981"
-    if proba < 0.55: return "Medium Risk", "review",  "#f59e0b"
-    return                   "High Risk",  "decline", "#ef4444"
+def risk_band(p):
+    if p < 0.30: return "Low",    "approve", "#10b981"
+    if p < 0.55: return "Medium", "review",  "#f59e0b"
+    return              "High",   "decline", "#ef4444"
 
 
-def get_tips(data):
+def build_tips(d):
     tips = []
-    income          = float(data.get('income', 1)) or 1
-    monthly_savings = float(data.get('monthly_savings', 0))
-    monthly_emi     = float(data.get('monthly_emi', 0))
-    spend_keys = ['food','shopping','entertainment','travel','bills','rent','education','medical']
-    total_exp  = sum(float(data.get(k, 0)) for k in spend_keys)
-    sr = monthly_savings / income
-    dr = monthly_emi / income
-    er = total_exp / income
-    cc = float(data.get('cc_usage', 30))
-    rh = data.get('repayment_history', 'Good')
+    income = float(d.get('income', 1)) or 1
+    ms     = float(d.get('monthly_savings', 0))
+    emi    = float(d.get('monthly_emi', 0))
+    spend  = sum(float(d.get(k, 0)) for k in
+                 ['food','shopping','entertainment','travel','bills','rent','education','medical'])
+    cc     = float(d.get('cc_usage', 30))
+    rh     = d.get('repayment_history', 'Good')
+    inv    = float(d.get('investments', 0))
+
+    sr = ms / income
+    dr = emi / income
+    er = spend / income
 
     if sr < 0.20:
         tips.append({
-            "icon": "💰",
-            "title": "Increase Your Savings Rate",
-            "body": f"You're saving {sr*100:.1f}% of income. Aim for 20%+. "
-                    f"An extra ₹{int(income*0.05):,}/month makes a significant difference."
+            "title": "Grow your savings",
+            "body": f"You are saving {sr*100:.1f}% of your income. Reaching 20% "
+                    f"gives lenders confidence in your financial discipline and directly improves your score."
         })
     if dr > 0.30:
         tips.append({
-            "icon": "💳",
-            "title": "Reduce Your EMI Burden",
-            "body": f"EMIs take up {dr*100:.1f}% of your income. Target below 30%. "
-                    "Prepay smaller loans first to free up cash flow."
+            "title": "Reduce your loan burden",
+            "body": f"Your monthly repayments take up {dr*100:.1f}% of income. "
+                    "Clearing smaller loans first can free up cash flow and improve your profile quickly."
         })
     if er > 0.70:
         tips.append({
-            "icon": "🛒",
-            "title": "Control Monthly Spending",
-            "body": f"Expenses are {er*100:.1f}% of income. Cutting discretionary spend "
-                    "(entertainment, shopping) by 15% improves your ratio meaningfully."
+            "title": "Manage your monthly expenses",
+            "body": f"Spending is at {er*100:.1f}% of income. Bringing this below 70% "
+                    "signals better financial control to lenders."
         })
     if cc > 30:
         tips.append({
-            "icon": "💳",
-            "title": "Lower Credit Card Utilisation",
-            "body": f"You're using {cc:.0f}% of your credit limit. Keep below 30%. "
-                    "Pay balances in full each month where possible."
-        })
-    if data.get('past_default') == "Yes":
-        tips.append({
-            "icon": "📋",
-            "title": "Address Past Defaults",
-            "body": "A past default is the single biggest score reducer. "
-                    "12 consecutive on-time payments significantly rebuild credit history."
+            "title": "Lower your card utilisation",
+            "body": f"Using {cc:.0f}% of your credit limit is above the recommended 30%. "
+                    "Paying down your balance improves this ratio quickly."
         })
     if rh in ["Poor", "Average"]:
         tips.append({
-            "icon": "📅",
-            "title": "Build a Clean Repayment Record",
-            "body": "Set up auto-debit for all EMIs and credit card minimums. "
-                    "Consistent on-time payments improve your history score fastest."
+            "title": "Build a clean repayment record",
+            "body": "Setting up automatic payments ensures you never miss a due date. "
+                    "Twelve consecutive on-time payments significantly strengthen your history."
         })
-    if float(data.get('investments', 0)) < 100000:
+    if d.get('past_default') == "Yes":
         tips.append({
-            "icon": "📈",
-            "title": "Start Investing",
-            "body": "Even small SIPs or FDs demonstrate financial planning and "
-                    "improve your overall financial strength score."
+            "title": "Address previous defaults",
+            "body": "A past default has a strong negative impact. Consistent on-time payments "
+                    "over the next 12 months is the fastest way to begin rebuilding trust."
+        })
+    if inv < 100000:
+        tips.append({
+            "title": "Start building investments",
+            "body": "Even small, regular investments in fixed deposits or mutual funds "
+                    "demonstrate long-term financial planning and strengthen your overall profile."
         })
     if not tips:
         tips.append({
-            "icon": "🌟",
-            "title": "Your profile looks strong!",
-            "body": "Keep maintaining your savings rate, low EMI ratio, and clean "
-                    "repayment history. Consider growing investments further."
+            "title": "Your profile is strong",
+            "body": "Keep maintaining your current savings discipline, low repayment burden, "
+                    "and consistent payment history. Consider increasing investments to further strengthen your position."
         })
     return tips
 
@@ -194,46 +182,56 @@ def index():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = request.json
-    income_monthly = float(data.get('income', 0))
-    income_annual  = income_monthly * 12
-    savings        = float(data.get('savings', 0))
-    debt           = float(data.get('debt', 0))
+    d      = request.json
+    income = float(d.get('income', 0))
+    savings= float(d.get('savings', 0))
+    debt   = float(d.get('debt', 0))
 
-    score          = compute_credit_score(data)
-    band_name, band_color = get_score_band(score)
+    score           = compute_score(d)
+    band_name, band_color = score_band(score)
+    proba           = get_default_proba(income * 12, savings, debt)
 
-    default_proba  = get_default_proba(income_annual, savings, debt)
-    pd_name = data.get('past_default', 'No')
-    rh      = data.get('repayment_history', 'Good')
-    dr      = float(data.get('monthly_emi', 0)) / (income_monthly or 1)
-    if pd_name == "Yes":  default_proba = min(default_proba + 0.20, 0.99)
-    if rh == "Excellent": default_proba = max(default_proba - 0.10, 0.01)
-    if rh == "Poor":      default_proba = min(default_proba + 0.15, 0.99)
-    if dr > 0.50:         default_proba = min(default_proba + 0.10, 0.99)
+    rh = d.get('repayment_history', 'Good')
+    dr = float(d.get('monthly_emi', 0)) / (income or 1)
+    if d.get('past_default') == "Yes": proba = min(proba + 0.20, 0.99)
+    if rh == "Excellent":              proba = max(proba - 0.10, 0.01)
+    if rh == "Poor":                   proba = min(proba + 0.15, 0.99)
+    if dr > 0.50:                      proba = min(proba + 0.10, 0.99)
 
-    risk_name, risk_class, risk_color = get_risk_band(default_proba)
-    tips = get_tips(data)
+    risk_name, risk_class, risk_color = risk_band(proba)
+    tips = build_tips(d)
 
-    spend_keys = ['food','shopping','entertainment','travel','bills','rent','education','medical']
-    total_exp  = sum(float(data.get(k, 0)) for k in spend_keys)
+    spend = sum(float(d.get(k, 0)) for k in
+                ['food','shopping','entertainment','travel','bills','rent','education','medical'])
+    ms    = float(d.get('monthly_savings', 0))
+    emi   = float(d.get('monthly_emi', 0))
 
     return jsonify({
-        "name":           data.get('name', 'User'),
-        "score":          score,
-        "band_name":      band_name,
-        "band_color":     band_color,
-        "default_proba":  round(default_proba * 100, 1),
-        "risk_name":      risk_name,
-        "risk_class":     risk_class,
-        "risk_color":     risk_color,
+        "name":        d.get('name', 'User'),
+        "score":       score,
+        "band_name":   band_name,
+        "band_color":  band_color,
+        "proba":       round(proba * 100, 1),
+        "risk_name":   risk_name,
+        "risk_class":  risk_class,
+        "risk_color":  risk_color,
+        "tips":        tips,
         "metrics": {
-            "savings_rate": round(float(data.get('monthly_savings',0)) / (income_monthly or 1) * 100, 1),
-            "emi_ratio":    round(dr * 100, 1),
-            "expense_ratio":round(total_exp / (income_monthly or 1) * 100, 1),
-            "debt_income":  round(debt / (income_annual or 1), 2),
+            "savings_rate":  round(ms / income * 100, 1) if income else 0,
+            "emi_ratio":     round(emi / income * 100, 1) if income else 0,
+            "expense_ratio": round(spend / income * 100, 1) if income else 0,
+            "debt_income":   round(debt / (income * 12), 2) if income else 0,
         },
-        "tips": tips
+        "spend_breakdown": {
+            "Food":           float(d.get('food', 0)),
+            "Shopping":       float(d.get('shopping', 0)),
+            "Entertainment":  float(d.get('entertainment', 0)),
+            "Travel":         float(d.get('travel', 0)),
+            "Bills":          float(d.get('bills', 0)),
+            "Rent":           float(d.get('rent', 0)),
+            "Education":      float(d.get('education', 0)),
+            "Medical":        float(d.get('medical', 0)),
+        }
     })
 
 
