@@ -1,73 +1,187 @@
- # Credit Risk Default Prediction
+AI-Powered Credit Risk Assessment and Financial Health Analysis System
 
-![Tests](https://github.com/shylaja-padmanaban/credit-risk-project/actions/workflows/tests.yml/badge.svg)
+Overview
 
-## 🚀 Live Demo
-👉 **[Try the app here](https://credit-risk-project-mbvl6yedog3tfhns2q5fxf.streamlit.app)**
+This project is an end-to-end Machine Learning web application developed using Flask to assess credit risk and analyze a customer's financial health. The system predicts the likelihood of default based on financial information provided by the user and generates personalized financial recommendations.
 
-Predicts whether a bank customer is likely to default on a loan based on
-their financial profile. Built end-to-end: EDA → modeling → SHAP
-explainability → CLI inference → Streamlit demo with CI/CD.
+The application integrates a trained Machine Learning model with a responsive web interface to provide real-time predictions.
 
-## Results
+Project Objectives
 
-| Task | Model | Key Metric |
-|------|-------|------------|
-| Credit Score (Regression) | Linear Regression | Test R² = 0.853 |
-| Default Prediction (Classification) | Logistic Regression | ROC-AUC = 0.685, Recall = 0.62 |
+• Assess customer credit risk using Machine Learning.
+• Predict the probability of loan default.
+• Provide financial health insights.
+• Build a complete end-to-end Machine Learning application.
+• Deploy the application using Flask.
 
-**Risk band validation:** "Decline" customers defaulted at 39.2% vs 8.2%
-for "Approve" — a 4.8x risk separation.
+Features
 
-**Top SHAP drivers:** R_DEBT_INCOME, R_SAVINGS_INCOME, R_TAX_DEBT
+• Credit risk prediction
+• Financial health analysis
+• Personalized financial recommendations
+• Interactive web interface
+• Real-time predictions
+• Responsive design
+• Machine Learning model integration
 
+Technology Stack
 
+Programming Language
 
-## How to run locally
-```bash
-# Install dependencies
+Python
+
+Machine Learning
+
+Scikit-learn
+Pandas
+NumPy
+
+Backend
+
+Flask
+
+Frontend
+
+HTML
+CSS
+JavaScript
+
+Development Tools
+
+Git
+GitHub
+Visual Studio Code
+
+Project Structure
+
+credit-risk-project/
+
+app_flask/
+    static/
+        style.css
+    templates/
+        index.html
+    app.py
+
+models/
+    default_model_pipeline.pkl
+
+data/
+
+notebooks/
+
+tests/
+
+requirements.txt
+
+README.md
+
+.gitignore
+
+Installation
+
+Clone the repository.
+
+git clone https://github.com/shylaja-padmanaban/credit-risk-project.git
+
+Move to the project directory.
+
+cd credit-risk-project
+
+Install the required packages.
+
 pip install -r requirements.txt
 
-# Train the model
-python src/train.py
+Run the application.
 
-# Predict for a new customer
-python src/predict.py --income 85000 --savings 273000 --debt 395000
+python app_flask/app.py
 
-# Launch demo app
-streamlit run app.py
+Open the application in your browser.
 
-# Run tests
-pytest tests/ -v
-```
+http://127.0.0.1:5000
 
-## Key findings
-- Linear Regression outperformed tree models for credit score prediction
-- Hyperparameter tuning was tested but degraded performance on this small
-  dataset — kept default-parameter Logistic Regression (deliberate decision)
-- R_GAMBLING_INCOME showed counterintuitive SHAP direction — flagged as
-  limitation for further investigation
-- Risk bands validated: "Decline" customers were 4.8x more likely to default
-  than "Approve" customers (39.2% vs 8.2%)
+Input Parameters
 
-## Tech stack
-Python, Pandas, Scikit-learn, XGBoost, SHAP, Streamlit, Pytest,
-GitHub Actions
+The application accepts the following information from the user.
 
-## Project Structure
- 
- 
- Results Summary
+• Annual Income
+• Savings
+• Debt
+• Employment Status
+• Repayment History
+• Previous Default History
+• Credit Card Usage
+• Years of Experience
+• House Ownership
+• Vehicle Ownership
+• Number of Dependents
 
-**Regression (CREDIT_SCORE):** Linear Regression, Test R² = 0.853
+Output
 
-**Classification (DEFAULT):** Logistic Regression (class_weight='balanced'),
-Test ROC-AUC = 0.685, Test Recall = 0.62
+The system provides the following results.
 
-**Risk bands validated:** customers flagged "Decline" were 4.8x more likely
-to actually default than those flagged "Approve" (39.2% vs 8.2%)
+• Credit Risk Prediction
+• Risk Category
+• Financial Health Assessment
+• Personalized Financial Recommendations
 
-**Top risk drivers (SHAP):** R_DEBT_INCOME, R_SAVINGS_INCOME, R_TAX_DEBT
+Machine Learning Workflow
 
-See `notebooks/credit-risk-analysis.ipynb` for full analysis, explainability,
-and limitations.
+1. Data Collection
+2. Data Preprocessing
+3. Feature Engineering
+4. Model Training
+5. Model Evaluation
+6. Model Serialization
+7. Flask Integration
+8. Prediction Generation
+9. Result Display
+
+Screenshots
+
+Home Page
+
+(Add screenshot here)
+
+Prediction Page
+
+(Add screenshot here)
+
+Prediction Result
+
+(Add screenshot here)
+
+Future Improvements
+
+• User Authentication
+• Prediction History
+• Dashboard with Analytics
+• Explainable AI
+• Database Integration
+• Cloud Deployment
+• Report Generation
+• REST API
+
+Learning Outcomes
+
+This project demonstrates practical knowledge of Machine Learning, data preprocessing, feature engineering, Flask web development, frontend and backend integration, deployment, and version control using Git and GitHub.
+
+Deployment
+
+The application is ready for deployment using Render.
+
+Author
+
+Shylaja Padmanaban
+
+Bachelor of Technology
+Artificial Intelligence and Data Science
+
+GitHub
+
+https://github.com/shylaja-padmanaban
+
+
+License
+
+This project is intended for educational and portfolio purposes.
