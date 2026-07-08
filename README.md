@@ -1,173 +1,147 @@
-AI-Powered Credit Risk Assessment and Financial Health Analysis System
+CreditIQ
 
-Overview
+AI Powered Financial Risk Analysis System
 
-This project is an end-to-end Machine Learning web application developed using Flask to assess credit risk and analyze a customer's financial health. The system predicts the likelihood of default based on financial information provided by the user and generates personalized financial recommendations.
+Project Overview
 
-The application integrates a trained Machine Learning model with a responsive web interface to provide real-time predictions.
+CreditIQ is a web application that analyzes a user's financial profile and provides a predicted credit score along with a financial risk assessment. The application collects financial information such as income, savings, debt, expenses, repayment history, and assets to generate personalized insights and recommendations for improving financial health.
 
-Project Objectives
+Problem Statement
 
-• Assess customer credit risk using Machine Learning.
-• Predict the probability of loan default.
-• Provide financial health insights.
-• Build a complete end-to-end Machine Learning application.
-• Deploy the application using Flask.
+Financial institutions evaluate multiple financial factors before approving loans. Many individuals do not understand how their financial habits affect their creditworthiness. This project helps users analyze their financial profile and understand the factors influencing their credit score and loan eligibility.
 
 Features
 
-• Credit risk prediction
-• Financial health analysis
-• Personalized financial recommendations
-• Interactive web interface
-• Real-time predictions
-• Responsive design
-• Machine Learning model integration
+Multi step financial assessment form
+
+Credit score prediction
+
+Loan approval recommendation
+
+Financial ratio analysis
+
+Monthly spending breakdown
+
+Personalized improvement suggestions
+
+Interactive and responsive user interface
 
 Technology Stack
 
-Programming Language
-
-Python
-
-Machine Learning
-
-Scikit-learn
-Pandas
-NumPy
-
-Backend
-
-Flask
-
 Frontend
-
 HTML
 CSS
 JavaScript
 
-Development Tools
+Backend
+Python
+Flask
 
-Git
-GitHub
-Visual Studio Code
+Libraries
+NumPy
+Pandas
+Scikit Learn
+Joblib
 
 Project Structure
 
-credit-risk-project/
+credit-risk-project
 
 app_flask/
-    static/
-        style.css
-    templates/
-        index.html
     app.py
+    templates/
+    static/
 
 models/
-    default_model_pipeline.pkl
 
 data/
-
-notebooks/
-
-tests/
 
 requirements.txt
 
 README.md
 
-.gitignore
+Application Workflow
+
+User enters personal and financial details.
+
+The frontend sends the data to the Flask backend.
+
+The backend processes the financial information.
+
+Credit score and financial metrics are calculated.
+
+The application generates a loan decision and personalized recommendations.
+
+The results are displayed with charts and financial insights.
+
+Screenshots
+
+Landing Page
+
+Add screenshot here
+
+Personal Details Form
+
+Add screenshot here
+
+Financial Details Form
+
+Add screenshot here
+
+Loading Screen
+
+Add screenshot here
+
+Results Dashboard
+
+Add screenshot here
+
+Improvement Plan
+
+Add screenshot here
 
 Installation
 
-Clone the repository.
+Clone the repository
 
 git clone https://github.com/shylaja-padmanaban/credit-risk-project.git
 
-Move to the project directory.
+Move to the project directory
 
 cd credit-risk-project
 
-Install the required packages.
+Install dependencies
 
 pip install -r requirements.txt
 
-Run the application.
+Run the application
 
 python app_flask/app.py
 
-Open the application in your browser.
-
-http://127.0.0.1:5000
-
-Input Parameters
-
-The application accepts the following information from the user.
-
-• Annual Income
-• Savings
-• Debt
-• Employment Status
-• Repayment History
-• Previous Default History
-• Credit Card Usage
-• Years of Experience
-• House Ownership
-• Vehicle Ownership
-• Number of Dependents
-
-Output
-
-The system provides the following results.
-
-• Credit Risk Prediction
-• Risk Category
-• Financial Health Assessment
-• Personalized Financial Recommendations
-
-Machine Learning Workflow
-
-1. Data Collection
-2. Data Preprocessing
-3. Feature Engineering
-4. Model Training
-5. Model Evaluation
-6. Model Serialization
-7. Flask Integration
-8. Prediction Generation
-9. Result Display
+Open your browser and visit : http://127.0.0.1:5000
 
 Future Improvements
 
-• User Authentication
-• Prediction History
-• Dashboard with Analytics
-• Explainable AI
-• Database Integration
-• Cloud Deployment
-• Report Generation
-• REST API
+Deploy the application online
 
-Learning Outcomes
+Generate downloadable PDF reports
 
-This project demonstrates practical knowledge of Machine Learning, data preprocessing, feature engineering, Flask web development, frontend and backend integration, deployment, and version control using Git and GitHub.
+Add user authentication
 
-Deployment
+Store user history using a database
 
-The application is ready for deployment using Render.
+Improve prediction accuracy using advanced machine learning models
 
 Author
 
-Shylaja Padmanaban
+Shylaja P
 
-Bachelor of Technology
-Artificial Intelligence and Data Science
+B.Tech Artificial Intelligence and Data Science
 
 GitHub
 
 https://github.com/shylaja-padmanaban
 
+Disclaimer
 
-License
-
-This project is intended for educational and portfolio purposes.
+This project is created for educational and portfolio purposes only. It should not be considered financial or lending advice.
