@@ -182,40 +182,32 @@ def index():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    d      = request.json
+    d     = request.json
+    score = compute_score(d)
+    band_name, band_color = score_band(score)
+    tips  = build_tips(d)
+
     income = float(d.get('income', 0))
-    savings= float(d.get('savings', 0))
+    ms     = float(d.get('monthly_savings', 0))
+    emi    = float(d.get('monthly_emi', 0))
+    spend  = sum(float(d.get(k, 0)) for k in
+                 ['food','shopping','entertainment','travel','bills','rent','education','medical'])
     debt   = float(d.get('debt', 0))
 
-    score           = compute_score(d)
-    band_name, band_color = score_band(score)
-    proba           = get_default_proba(income * 12, savings, debt)
-
-    rh = d.get('repayment_history', 'Good')
-    dr = float(d.get('monthly_emi', 0)) / (income or 1)
-    if d.get('past_default') == "Yes": proba = min(proba + 0.20, 0.99)
-    if rh == "Excellent":              proba = max(proba - 0.10, 0.01)
-    if rh == "Poor":                   proba = min(proba + 0.15, 0.99)
-    if dr > 0.50:                      proba = min(proba + 0.10, 0.99)
-
-    risk_name, risk_class, risk_color = risk_band(proba)
-    tips = build_tips(d)
-
-    spend = sum(float(d.get(k, 0)) for k in
-                ['food','shopping','entertainment','travel','bills','rent','education','medical'])
-    ms    = float(d.get('monthly_savings', 0))
-    emi   = float(d.get('monthly_emi', 0))
+    if   score >= 740: decision, dec_color, dec_note = "Approved",                "#10b981", "Your profile meets standard lending criteria."
+    elif score >= 670: decision, dec_color, dec_note = "Conditionally Approved",  "#3b82f6", "Likely approved subject to lender verification."
+    elif score >= 580: decision, dec_color, dec_note = "Under Review",            "#f59e0b", "Your profile may need supporting documentation."
+    else:              decision, dec_color, dec_note = "Not Approved",            "#ef4444", "Focus on the improvement plan below to strengthen your profile."
 
     return jsonify({
-        "name":        d.get('name', 'User'),
-        "score":       score,
-        "band_name":   band_name,
-        "band_color":  band_color,
-        "proba":       round(proba * 100, 1),
-        "risk_name":   risk_name,
-        "risk_class":  risk_class,
-        "risk_color":  risk_color,
-        "tips":        tips,
+        "name":       d.get('name', 'User'),
+        "score":      score,
+        "band_name":  band_name,
+        "band_color": band_color,
+        "decision":   decision,
+        "dec_color":  dec_color,
+        "dec_note":   dec_note,
+        "tips":       tips,
         "metrics": {
             "savings_rate":  round(ms / income * 100, 1) if income else 0,
             "emi_ratio":     round(emi / income * 100, 1) if income else 0,
@@ -223,17 +215,16 @@ def predict():
             "debt_income":   round(debt / (income * 12), 2) if income else 0,
         },
         "spend_breakdown": {
-            "Food":           float(d.get('food', 0)),
-            "Shopping":       float(d.get('shopping', 0)),
-            "Entertainment":  float(d.get('entertainment', 0)),
-            "Travel":         float(d.get('travel', 0)),
-            "Bills":          float(d.get('bills', 0)),
-            "Rent":           float(d.get('rent', 0)),
-            "Education":      float(d.get('education', 0)),
-            "Medical":        float(d.get('medical', 0)),
+            "Food":          float(d.get('food', 0)),
+            "Shopping":      float(d.get('shopping', 0)),
+            "Entertainment": float(d.get('entertainment', 0)),
+            "Travel":        float(d.get('travel', 0)),
+            "Bills":         float(d.get('bills', 0)),
+            "Rent":          float(d.get('rent', 0)),
+            "Education":     float(d.get('education', 0)),
+            "Medical":       float(d.get('medical', 0)),
         }
     })
-
-
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)

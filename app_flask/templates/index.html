@@ -397,19 +397,21 @@
           <div class="seg-labels">
             <span>Poor</span><span>Fair</span><span>Good</span><span>Very Good</span><span>Excellent</span>
           </div>
-        </div>
-
-        <div class="risk-card" id="r-risk-card">
-          <div class="card-eye">Default Risk</div>
-          <div class="risk-big" id="r-proba">—</div>
-          <div class="risk-label" id="r-risk-label">—</div>
-          <div class="risk-refs">
-            <div class="risk-ref" id="rr1"><span>Below 30%</span><span>Approve</span></div>
-            <div class="risk-ref" id="rr2"><span>30% to 55%</span><span>Manual Review</span></div>
-            <div class="risk-ref" id="rr3"><span>Above 55%</span><span>Decline</span></div>
-          </div>
-        </div>
       </div>
+
+  <div class="decision-card" id="r-decision-card">
+    <div class="card-eye">Loan Decision</div>
+    <div class="decision-big" id="r-decision">—</div>
+    <div class="decision-note" id="r-dec-note">—</div>
+    <div class="decision-table">
+      <div class="decision-row" id="dr1"><span>800 – 900</span><span>Excellent — Approved</span></div>
+      <div class="decision-row" id="dr2"><span>740 – 799</span><span>Very Good — Approved</span></div>
+      <div class="decision-row" id="dr3"><span>670 – 739</span><span>Good — Conditionally Approved</span></div>
+      <div class="decision-row" id="dr4"><span>580 – 669</span><span>Fair — Under Review</span></div>
+      <div class="decision-row" id="dr5"><span>300 – 579</span><span>Poor — Not Approved</span></div>
+    </div>
+  </div>
+</div>
 
       <div class="metrics-row">
         <div class="metric-box">
@@ -547,16 +549,18 @@ function render(d) {
   const bandMap = {Poor:1, Fair:2, Good:3, 'Very Good':4, Excellent:5};
   const lit = bandMap[d.band_name] || 1;
   for (let i = 1; i <= 5; i++) document.getElementById('sg'+i).classList.toggle('lit', i <= lit);
-
-  document.getElementById('r-proba').textContent  = d.proba + '%';
-  document.getElementById('r-proba').style.color  = d.risk_color;
-  document.getElementById('r-risk-label').textContent = d.risk_name + ' Risk';
-  document.getElementById('r-risk-label').style.color = d.risk_color;
-  document.getElementById('r-risk-card').className    = 'risk-card ' + d.risk_class;
-
-  ['rr1','rr2','rr3'].forEach(id => document.getElementById(id).classList.remove('active'));
-  const rrMap = {approve:'rr1', review:'rr2', decline:'rr3'};
-  if (rrMap[d.risk_class]) document.getElementById(rrMap[d.risk_class]).classList.add('active');
+  document.getElementById('r-decision').textContent = d.decision;
+  document.getElementById('r-decision').style.color = d.dec_color;
+  document.getElementById('r-dec-note').textContent = d.dec_note;
+  document.getElementById('r-decision-card').style.borderColor = d.dec_color;
+  ['dr1','dr2','dr3','dr4','dr5'].forEach(id =>
+  document.getElementById(id).classList.remove('active'));
+  const score = d.score;
+  if      (score >= 800) document.getElementById('dr1').classList.add('active');
+  else if (score >= 740) document.getElementById('dr2').classList.add('active');
+  else if (score >= 670) document.getElementById('dr3').classList.add('active');
+  else if (score >= 580) document.getElementById('dr4').classList.add('active');
+  else                   document.getElementById('dr5').classList.add('active');
 
   const m = d.metrics;
   setM('sr', m.savings_rate+'%',  m.savings_rate>=20,  m.savings_rate>=20?'Healthy':'Needs improvement');
